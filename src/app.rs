@@ -9,6 +9,7 @@ use crate::{cli::Cli, qr};
 pub enum RunOutput {
     Terminal(String),
     Saved(PathBuf),
+    Version(String),
 }
 
 pub fn run_with_args<I, T>(args: I) -> Result<RunOutput>
@@ -16,12 +17,20 @@ where
     I: IntoIterator<Item = T>,
     T: Into<OsString> + Clone,
 {
-    let cli = Cli::try_parse_from(args).context("failed to parse CLI arguments")?;
+    let cli = Cli::try_parse_from(args)?;
     process_cli(cli)
 }
 
 pub fn process_cli(cli: Cli) -> Result<RunOutput> {
-    let content = cli.content.trim();
+    if cli.version {
+        return Ok(RunOutput::Version(format!(
+            "{} {}",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        )));
+    }
+
+    let content = cli.content.as_deref().unwrap_or("").trim();
     if content.is_empty() {
         bail!("input content is empty. Please provide non-empty text.");
     }
