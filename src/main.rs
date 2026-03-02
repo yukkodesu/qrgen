@@ -23,7 +23,13 @@ fn run() -> Result<()> {
     let output = run_with_args(std::env::args_os())?;
     match output {
         RunOutput::Terminal(rendered) => println!("{rendered}"),
-        RunOutput::Saved(path) => println!("Saved QR code PNG to {}", path.display()),
+        RunOutput::Saved { path, format } => {
+            println!(
+                "Saved QR code {} to {}",
+                format.as_str().to_uppercase(),
+                path.display()
+            )
+        }
         RunOutput::Version(version) => println!("{version}"),
     }
     Ok(())

@@ -12,6 +12,7 @@ fn parses_defaults() {
     assert_eq!(cli.content, Some("hello".to_string()));
     assert_eq!(cli.size, 256);
     assert!(cli.output.is_none());
+    assert!(cli.format.is_none());
 }
 
 #[test]
@@ -20,6 +21,17 @@ fn parses_output_and_size() {
         .expect("should parse output + size");
     assert_eq!(cli.size, 512);
     assert_eq!(cli.output, Some(PathBuf::from("out.png")));
+}
+
+#[test]
+fn parses_format() {
+    let cli = Cli::try_parse_from(["qrgen", "hello", "-o", "out.webp", "--format", "webp"])
+        .expect("should parse format");
+    assert_eq!(cli.output, Some(PathBuf::from("out.webp")));
+    assert_eq!(
+        cli.format.map(|format| format.as_str().to_string()),
+        Some("webp".to_string())
+    );
 }
 
 #[test]
@@ -35,6 +47,7 @@ fn help_includes_version_short_flag() {
     let err = Cli::try_parse_from(["qrgen", "-h"]).expect_err("help should short-circuit");
     let text = err.to_string();
     assert!(text.contains("-v, --version"));
+    assert!(text.contains("--format <FORMAT>"));
     assert!(text.contains("Examples:"));
 }
 

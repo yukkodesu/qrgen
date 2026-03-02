@@ -1,8 +1,10 @@
 use std::path::Path;
 
 use anyhow::{Context, Result};
-use image::{Luma, imageops::FilterType};
+use image::{DynamicImage, ImageFormat, Luma, imageops::FilterType};
 use qrcode::{QrCode, render::unicode};
+
+use crate::cli::OutputFormat;
 
 pub fn render_terminal(content: &str) -> Result<String> {
     let code = QrCode::new(content.as_bytes()).context("failed to generate QR code")?;
@@ -16,15 +18,29 @@ pub fn render_terminal(content: &str) -> Result<String> {
     Ok(rendered)
 }
 
-pub fn write_png(content: &str, output: &Path, size: u32) -> Result<()> {
+pub fn write_image(content: &str, output: &Path, size: u32, format: OutputFormat) -> Result<()> {
     let code = QrCode::new(content.as_bytes()).context("failed to generate QR code")?;
 
     let raw = code.render::<Luma<u8>>().build();
     let image = image::imageops::resize(&raw, size, size, FilterType::Nearest);
+    let dynamic = DynamicImage::ImageLuma8(image);
 
-    image
-        .save(output)
-        .with_context(|| format!("failed to write PNG file: {}", output.display()))?;
+    let image_format = match format {
+        OutputFormat::Avif => ImageFormat::Avif,
+        OutputFormat::Png => ImageFormat::Png,
+        OutputFormat::Jpeg => ImageFormat::Jpeg,
+        OutputFormat::Webp => ImageFormat::WebP,
+    };
+
+    dynamic
+        .save_with_format(output, image_format)
+        .with_context(|| {
+            format!(
+                "failed to write {} file: {}",
+                format.as_str(),
+                output.display()
+            )
+        })?;
 
     Ok(())
 }

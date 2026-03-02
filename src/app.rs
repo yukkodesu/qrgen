@@ -3,12 +3,15 @@ use std::{ffi::OsString, path::PathBuf};
 use anyhow::{Context, Result, bail};
 use clap::Parser;
 
-use crate::{cli::Cli, qr};
+use crate::{
+    cli::{Cli, OutputFormat},
+    qr,
+};
 
 #[derive(Debug)]
 pub enum RunOutput {
     Terminal(String),
-    Saved(PathBuf),
+    Saved { path: PathBuf, format: OutputFormat },
     Version(String),
 }
 
@@ -39,6 +42,10 @@ pub fn process_cli(cli: Cli) -> Result<RunOutput> {
         bail!("invalid --size value: must be greater than 0.");
     }
 
+    if cli.output.is_none() && cli.format.is_some() {
+        bail!("--format requires --output. Please provide an output file path.");
+    }
+
     match cli.output {
         Some(path) => {
             if let Some(parent) = path.parent()
@@ -51,9 +58,15 @@ pub fn process_cli(cli: Cli) -> Result<RunOutput> {
                 );
             }
 
-            qr::write_png(content, &path, cli.size)
-                .with_context(|| format!("could not generate PNG at {}", path.display()))?;
-            Ok(RunOutput::Saved(path))
+            let format = cli.format.unwrap_or(OutputFormat::Png);
+            qr::write_image(content, &path, cli.size, format).with_context(|| {
+                format!(
+                    "could not generate {} at {}",
+                    format.as_str().to_uppercase(),
+                    path.display()
+                )
+            })?;
+            Ok(RunOutput::Saved { path, format })
         }
         None => {
             let output = qr::render_terminal(content)?;

@@ -1,6 +1,6 @@
 # qrgen
 
-A fast command-line tool for generating QR codes. Render in the terminal or save as PNG.
+A fast command-line tool for generating QR codes. Render in the terminal or save as image files.
 
 ## Install
 
@@ -22,6 +22,14 @@ qrgen "hello world"
 qrgen "https://example.com" -o ./dist/site.png
 ```
 
+### Save as WebP/AVIF/JPEG with `--format`
+
+```bash
+qrgen "https://example.com" -o ./dist/site.webp --format webp
+qrgen "https://example.com" -o ./dist/site.avif --format avif
+qrgen "https://example.com" -o ./dist/site.jpeg --format jpeg
+```
+
 ### Custom image size
 
 ```bash
@@ -37,7 +45,8 @@ Arguments:
   <CONTENT>  QR content text
 
 Options:
-  -o, --output <FILE>    Output PNG file path. If omitted, render in terminal.
+  -o, --output <FILE>    Output image file path. If omitted, render in terminal.
+      --format <FORMAT>  Output format for file export (requires --output) [possible values: avif, png, jpeg, webp]
   -s, --size <PIXELS>    Output image size in pixels [default: 256]
   -v, --version          Print version information
   -h, --help             Print help (see more with '--help')
