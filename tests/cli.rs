@@ -35,6 +35,17 @@ fn parses_format() {
 }
 
 #[test]
+fn parses_svg_format() {
+    let cli = Cli::try_parse_from(["qrgen", "hello", "-o", "out.svg", "--format", "svg"])
+        .expect("should parse svg format");
+    assert_eq!(cli.output, Some(PathBuf::from("out.svg")));
+    assert_eq!(
+        cli.format.map(|format| format.as_str().to_string()),
+        Some("svg".to_string())
+    );
+}
+
+#[test]
 fn no_args_shows_help_with_examples() {
     let err = Cli::try_parse_from(["qrgen"]).expect_err("missing args should show help");
     let text = err.to_string();
@@ -48,6 +59,7 @@ fn help_includes_version_short_flag() {
     let text = err.to_string();
     assert!(text.contains("-v, --version"));
     assert!(text.contains("--format <FORMAT>"));
+    assert!(text.contains("svg"));
     assert!(text.contains("Examples:"));
 }
 

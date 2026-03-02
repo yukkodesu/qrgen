@@ -73,3 +73,35 @@ fn run_webp_success_path_creates_file() {
 
     std::fs::remove_file(&output).expect("cleanup should remove test artifact");
 }
+
+#[test]
+fn run_svg_success_path_creates_valid_svg() {
+    let output = unique_tmp_image_path("m5-svg-success", "svg");
+    let output_arg = output.to_string_lossy().into_owned();
+    let args = [
+        "qrgen",
+        "https://example.com",
+        "--output",
+        &output_arg,
+        "--format",
+        "svg",
+    ];
+
+    let result = run_with_args(args).expect("svg run should work");
+    match result {
+        RunOutput::Saved { path, format } => {
+            assert_eq!(path, output);
+            assert_eq!(format.as_str(), "svg");
+        }
+        RunOutput::Terminal(_) => panic!("expected file output"),
+        RunOutput::Version(_) => panic!("expected file output"),
+    }
+
+    let text = std::fs::read_to_string(&output).expect("svg should be readable text");
+    assert!(text.contains("<?xml"));
+    assert!(text.contains("<svg"));
+    assert!(text.contains("viewBox="));
+    assert!(text.contains("<path"));
+
+    std::fs::remove_file(&output).expect("cleanup should remove test artifact");
+}

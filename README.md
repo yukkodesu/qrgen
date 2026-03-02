@@ -22,12 +22,13 @@ qrgen "hello world"
 qrgen "https://example.com" -o ./dist/site.png
 ```
 
-### Save as WebP/AVIF/JPEG with `--format`
+### Save as WebP/AVIF/JPEG/SVG with `--format`
 
 ```bash
 qrgen "https://example.com" -o ./dist/site.webp --format webp
 qrgen "https://example.com" -o ./dist/site.avif --format avif
 qrgen "https://example.com" -o ./dist/site.jpeg --format jpeg
+qrgen "https://example.com" -o ./dist/site.svg --format svg
 ```
 
 ### Custom image size
@@ -46,7 +47,7 @@ Arguments:
 
 Options:
   -o, --output <FILE>    Output image file path. If omitted, render in terminal.
-      --format <FORMAT>  Output format for file export (requires --output) [possible values: avif, png, jpeg, webp]
+      --format <FORMAT>  Output format for file export (requires --output) [possible values: avif, png, jpeg, webp, svg]
   -s, --size <PIXELS>    Output image size in pixels [default: 256]
   -v, --version          Print version information
   -h, --help             Print help (see more with '--help')

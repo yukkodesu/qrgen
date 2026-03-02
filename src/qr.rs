@@ -2,7 +2,10 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use image::{DynamicImage, ImageFormat, Luma, imageops::FilterType};
-use qrcode::{QrCode, render::unicode};
+use qrcode::{
+    QrCode,
+    render::{svg, unicode},
+};
 
 use crate::cli::OutputFormat;
 
@@ -21,6 +24,22 @@ pub fn render_terminal(content: &str) -> Result<String> {
 pub fn write_image(content: &str, output: &Path, size: u32, format: OutputFormat) -> Result<()> {
     let code = QrCode::new(content.as_bytes()).context("failed to generate QR code")?;
 
+    if format == OutputFormat::Svg {
+        let svg_xml = code
+            .render::<svg::Color>()
+            .min_dimensions(size, size)
+            .build();
+
+        std::fs::write(output, svg_xml).with_context(|| {
+            format!(
+                "failed to write {} file: {}",
+                format.as_str(),
+                output.display()
+            )
+        })?;
+        return Ok(());
+    }
+
     let raw = code.render::<Luma<u8>>().build();
     let image = image::imageops::resize(&raw, size, size, FilterType::Nearest);
     let dynamic = DynamicImage::ImageLuma8(image);
@@ -30,6 +49,7 @@ pub fn write_image(content: &str, output: &Path, size: u32, format: OutputFormat
         OutputFormat::Png => ImageFormat::Png,
         OutputFormat::Jpeg => ImageFormat::Jpeg,
         OutputFormat::Webp => ImageFormat::WebP,
+        OutputFormat::Svg => unreachable!("svg format is handled in dedicated text output branch"),
     };
 
     dynamic
